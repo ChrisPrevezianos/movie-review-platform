@@ -7,4 +7,4 @@ class Director(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     last_name: str = Field(index=True, max_length=50)
     first_name: str = Field(index=True, max_length=50)
-    birth_date: datetime.date | None = Field(default=None, index=True)
+    birth_date: datetime.date | None = Field(default=None)
