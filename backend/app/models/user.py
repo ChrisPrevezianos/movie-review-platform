@@ -1,7 +1,11 @@
 import datetime
 import uuid
-from sqlmodel import Field, SQLModel
+from typing import TYPE_CHECKING
+from sqlmodel import Field, SQLModel, Relationship
 from pydantic import EmailStr
+
+if TYPE_CHECKING:
+    from app.models.review import Review
 
 def get_datetime_utc() -> datetime.datetime:
     return datetime.datetime.now(datetime.timezone.utc)
@@ -19,3 +23,4 @@ class User(SQLModel, table=True):
             default_factory=get_datetime_utc, 
             sa_type=DateTime(timezone=True),  # type: ignore
         )
+    reviews: list["Review"] = Relationship(back_populates="user", cascade_delete=True)

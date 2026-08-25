@@ -1,7 +1,15 @@
 import datetime 
-from sqlalchemy import DateTime
 import uuid
-from sqlmodel import Field, SQLModel
+from sqlalchemy import DateTime
+from typing import TYPE_CHECKING
+from sqlmodel import Field, SQLModel, Relationship
+from app.models.links import MovieActor, MovieDirector, MovieGenre
+
+if TYPE_CHECKING:
+    from app.models.actor import Actor
+    from app.models.director import Director
+    from app.models.genre import Genre
+    from app.models.review import Review
 
 def get_datetime_utc() -> datetime.datetime:
     return datetime.datetime.now(datetime.timezone.utc)
@@ -21,3 +29,7 @@ class Movie(SQLModel, table=True):
         default_factory=get_datetime_utc, 
         sa_type=DateTime(timezone=True),  # type: ignore
     )
+    actors: list["Actor"] = Relationship(back_populates="movies", link_model=MovieActor)
+    directors: list["Director"] = Relationship(back_populates="movies", link_model=MovieDirector)
+    genres: list["Genre"] = Relationship(back_populates="movies", link_model=MovieGenre)
+    reviews: list["Review"] = Relationship(back_populates="movie", cascade_delete=True)

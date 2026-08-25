@@ -1,7 +1,12 @@
 import datetime
 import uuid
-from sqlmodel import Field, SQLModel
+from typing import TYPE_CHECKING
+from sqlmodel import Field, SQLModel, Relationship
 from sqlalchemy import DateTime, UniqueConstraint
+
+if TYPE_CHECKING:
+    from app.models.movie import Movie
+    from app.models.user import User
 
 def get_datetime_utc() -> datetime.datetime:
     return datetime.datetime.now(datetime.timezone.utc)
@@ -26,3 +31,5 @@ class Review(SQLModel, table=True):
         )
     user_id: uuid.UUID = Field(foreign_key="users.id", index=True)
     movie_id: uuid.UUID = Field(foreign_key="movies.id", index=True)
+    movie: "Movie" = Relationship(back_populates="reviews")
+    user: "User" = Relationship(back_populates="reviews")
