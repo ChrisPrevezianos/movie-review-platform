@@ -66,9 +66,21 @@ def update_hashed_password(*, session: Session, db_user: User, hashed_password: 
     session.refresh(db_user)
     return db_user
 
-def delete_user(*, session: Session, db_user: User) -> None:
-    session.delete(db_user)
+def deactivate_user(*, session: Session, db_user: User) -> User:
+    """Deactivate a user account without deleting its data."""
+    db_user.is_active = False
+    session.add(db_user)
     session.commit()
+    session.refresh(db_user)
+    return db_user
+
+def reactivate_user(*, session: Session, db_user: User) -> User:
+    """Reactivate a previously deactivated user account."""
+    db_user.is_active = True
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
+    return db_user
 
 def count_active_users(*, session: Session) -> int:
     """Return the number of active user accounts."""
