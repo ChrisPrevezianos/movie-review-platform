@@ -3,10 +3,10 @@ from sqlmodel import Field, SQLModel
 
 
 class GenreCreate(SQLModel):
-    name: str = Field(max_length=100)
+    name: str = Field(max_length=50)
 
 class GenreUpdate(SQLModel):
-    name: str = Field(max_length=100)
+    name: str = Field(max_length=50)
 
 class GenrePublic(SQLModel):
     id: uuid.UUID

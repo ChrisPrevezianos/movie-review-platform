@@ -4,21 +4,21 @@ from sqlmodel import Field, SQLModel
 from pydantic import EmailStr
 
 class UserCreate(SQLModel):
-    username: str = Field(max_length=255)
-    email: EmailStr = Field(max_length=255)
+    username: str = Field(max_length=50)
+    email: EmailStr = Field(max_length=100)
     password: str = Field(min_length=8, max_length=128)
 
 # Admin-only user update schema
 class UserUpdate(SQLModel):
-    username: str | None = Field(default=None, max_length=255)
-    email: EmailStr | None = Field(default=None, max_length=255)
+    username: str | None = Field(default=None, max_length=50)
+    email: EmailStr | None = Field(default=None, max_length=100)
     password: str | None = Field(default=None, min_length=8, max_length=128)
     is_active: bool | None = None
     is_superuser: bool | None = None
 
 class UserUpdateMe(SQLModel):
-    username: str | None = Field(default=None, max_length=255)
-    email: EmailStr | None = Field(default=None, max_length=255)
+    username: str | None = Field(default=None, max_length=50)
+    email: EmailStr | None = Field(default=None, max_length=100)
 
 
 class UpdatePassword(SQLModel):
