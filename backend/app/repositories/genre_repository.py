@@ -30,3 +30,11 @@ def update_genre(*, session: Session, db_genre: Genre, genre_update: GenreUpdate
 def delete_genre(*, session: Session, db_genre: Genre) -> None:
     session.delete(db_genre)
     session.commit()
+
+def get_genre_by_name(*, session: Session, genre_name: str) -> Genre | None:
+    """Return a genre by name using a case-insensitive search.
+    Used to prevent duplicate genre names during create and update operations.
+    """
+    statement = select(Genre).where(Genre.name.ilike(genre_name))
+    session_genre = session.exec(statement).first()
+    return session_genre
