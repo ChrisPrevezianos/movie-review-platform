@@ -30,3 +30,11 @@ def update_actor(*, session: Session, db_actor: Actor, actor_update: ActorUpdate
 def delete_actor(*, session: Session, db_actor: Actor) -> None:
     session.delete(db_actor)
     session.commit()
+
+def get_actor_by_name(*, session: Session, actor_first_name: str, actor_last_name: str) -> Actor | None:
+    """Return an actor by first and last name using a case-insensitive search.
+    Used to prevent duplicate actors during create and update operations.
+    """
+    statement = select(Actor).where(Actor.first_name.ilike(actor_first_name),Actor.last_name.ilike(actor_last_name)) 
+    session_actor = session.exec(statement).first()
+    return session_actor
