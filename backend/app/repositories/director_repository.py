@@ -30,3 +30,11 @@ def update_director(*, session: Session, db_director: Director, director_update:
 def delete_director(*, session: Session, db_director: Director) -> None:
     session.delete(db_director)
     session.commit()
+
+def get_director_by_name(*, session: Session, director_first_name: str, director_last_name: str) -> Director | None:
+    """Return a director by first and last name using a case-insensitive search.
+    Used to prevent duplicate directors during create and update operations.
+    """
+    statement = select(Director).where(Director.first_name.ilike(director_first_name),Director.last_name.ilike(director_last_name))
+    session_director = session.exec(statement).first()
+    return session_director
