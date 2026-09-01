@@ -1,3 +1,4 @@
+"""Service functions for Director business rules and repository operations."""
 import uuid
 from fastapi import HTTPException, status
 from sqlmodel import Session
@@ -30,8 +31,9 @@ def create_director(*, session: Session, director_create: DirectorCreate) -> Dir
 def get_director_by_id(*, session: Session, director_id: uuid.UUID) -> Director | None:
     return director_repo.get_director_by_id(session=session, director_id=director_id)
 
-def get_directors(*, session: Session) -> list[Director]:
-    return director_repo.get_directors(session=session)
+def get_directors(*, session: Session, skip: int = 0, limit: int = 10) -> list[Director]:
+    """Return directors with pagination."""
+    return director_repo.get_directors(session=session, skip=skip, limit=limit)
 
 def update_director(*, session: Session, db_director: Director, director_update: DirectorUpdate) -> Director:
     """Update a director after normalizing names and preventing empty, unchanged, or duplicate data."""
@@ -80,3 +82,15 @@ def delete_director(*, session: Session, db_director: Director) -> None:
             detail="Director is associated with movies"
         )
     return director_repo.delete_director(session=session, db_director=db_director)
+
+def search_directors(*, session: Session, search_term: str, skip: int = 0, limit: int = 10) -> list[Director]:
+    """Search directors by first name, last name, or full name with pagination."""
+    return director_repo.search_directors(session=session, search_term=search_term, skip=skip, limit=limit)
+
+def count_directors(*, session: Session) -> int:
+    """Return the total number of directors."""
+    return director_repo.count_directors(session=session)
+
+def count_directors_by_search(*, session: Session, search_term: str) -> int:
+    """Return the total number of directors matching the search term."""
+    return director_repo.count_directors_by_search(session=session, search_term=search_term)
