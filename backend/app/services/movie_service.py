@@ -5,10 +5,11 @@ from app.models.movie import Movie
 from app.schemas.movie import MovieCreate, MovieUpdate
 from app.repositories import movie_repository as movie_repo
 from app.repositories import review_repository as review_repo
+from app.repositories import genre_repository as genre_repo
 from fastapi import HTTPException, status
 
 def create_movie(*, session: Session, movie_create: MovieCreate) -> Movie:
-    """Create a movie unless the same title and release year already exist."""
+    """Create a movie after validating duplicate title/year and resolving its selected genres."""
     existing_title = movie_repo.get_movie_by_exact_title(session=session, title=movie_create.title)
     if existing_title:
         if any(movie.release_year == movie_create.release_year for movie in existing_title):
@@ -16,7 +17,18 @@ def create_movie(*, session: Session, movie_create: MovieCreate) -> Movie:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="The movie with this title and release year already exists in the system.",
             )
-    return movie_repo.create_movie(session=session, movie_create=movie_create)
+
+    genres = []
+    for genre_id in movie_create.genre_ids:
+        genre_obj = genre_repo.get_genre_by_id(session=session, genre_id=genre_id)
+        if not genre_obj:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="One or more genre IDs do not exist.",
+            )
+        genres.append(genre_obj)
+        
+    return movie_repo.create_movie(session=session, genres=genres, movie_create=movie_create)
 
 def get_movie_by_id(*, session: Session, movie_id: uuid.UUID) -> Movie | None:
     """Return a movie by ID, if it exists."""
@@ -27,9 +39,7 @@ def get_movies(*, session: Session, skip: int = 0, limit: int = 10) -> list[Movi
     return movie_repo.get_movies(session=session, skip=skip, limit=limit)
 
 def update_movie(*, session: Session, db_movie: Movie, movie_update: MovieUpdate) -> Movie:
-    """Update a movie while preventing unchanged title/year values
-    and duplicate title + release year combinations.
-    """
+    """Update a movie while enforcing title/year rules and optionally updating its genres."""
     if movie_update.title is not None or movie_update.release_year is not None:
         if movie_update.title == db_movie.title:
             raise HTTPException(
@@ -52,7 +62,20 @@ def update_movie(*, session: Session, db_movie: Movie, movie_update: MovieUpdate
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="The movie with this title and release year already exists in the system.",
                 )
-    return movie_repo.update_movie(session=session, db_movie=db_movie, movie_update=movie_update)
+
+    genres = None
+    if movie_update.genre_ids is not None:
+        genres = []
+        for genre_id in movie_update.genre_ids:
+            genre_obj = genre_repo.get_genre_by_id(session=session, genre_id=genre_id)
+            if not genre_obj:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="One or more genre IDs do not exist.",
+                )
+            genres.append(genre_obj)
+
+    return movie_repo.update_movie(session=session, db_movie=db_movie, genres=genres, movie_update=movie_update)
 
 def delete_movie(*, session: Session, db_movie: Movie) -> None:
     """Delete a movie only if it has no associated reviews."""
