@@ -10,8 +10,11 @@ from app.models.user import User
 from app.schemas.movie import MovieCreate, MovieUpdate
 from sqlalchemy import func
 
-def create_movie(*, session: Session, movie_create: MovieCreate) -> Movie:
-    db_movie = Movie.model_validate(movie_create)
+def create_movie(*, session: Session, genres: list[Genre], movie_create: MovieCreate) -> Movie:
+    """Create and persist a movie with its selected genre relationships."""
+    movie_data = movie_create.model_dump(exclude={"genre_ids"})
+    db_movie = Movie.model_validate(movie_data)
+    db_movie.genres = genres
     session.add(db_movie)
     session.commit()
     session.refresh(db_movie)
@@ -28,15 +31,19 @@ def get_movies(*, session: Session, skip: int = 0, limit: int = 10) -> list[Movi
     session_movies = session.exec(statement).all()
     return list(session_movies)
 
-def update_movie(*, session: Session, db_movie: Movie, movie_update: MovieUpdate) -> Movie:
-    movie_data = movie_update.model_dump(exclude_unset=True)
+def update_movie(*, session: Session, db_movie: Movie, genres: list[Genre] | None, movie_update: MovieUpdate) -> Movie:
+    """Update movie fields and optionally replace its genre relationships."""
+    movie_data = movie_update.model_dump(exclude_unset=True, exclude={"genre_ids"})
     db_movie.sqlmodel_update(movie_data)
+    if genres is not None:
+        db_movie.genres = genres
     session.add(db_movie)
     session.commit()
     session.refresh(db_movie)
     return db_movie
 
 def delete_movie(*, session: Session, db_movie: Movie) -> None:
+    """Delete a movie from the database."""
     session.delete(db_movie)
     session.commit()
 
