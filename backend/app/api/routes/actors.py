@@ -2,7 +2,7 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.api.deps import SessionDep, get_current_active_superuser
-from app.schemas import ActorPublic, ActorsPublic, ActorCreate, ActorUpdate
+from app.schemas.actor import ActorPublic, ActorsPublic, ActorCreate, ActorUpdate
 from app.services import actor_service
 
 router = APIRouter(prefix="/actors", tags=["actors"])

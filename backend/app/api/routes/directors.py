@@ -2,7 +2,7 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.api.deps import SessionDep, get_current_active_superuser
-from app.schemas import DirectorPublic, DirectorsPublic, DirectorCreate, DirectorUpdate
+from app.schemas.director import DirectorPublic, DirectorsPublic, DirectorCreate, DirectorUpdate
 from app.services import director_service
 
 router = APIRouter(prefix="/directors", tags=["directors"])

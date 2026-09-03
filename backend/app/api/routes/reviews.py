@@ -2,7 +2,7 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.api.deps import SessionDep, CurrentUser, get_current_active_superuser
-from app.schemas import ReviewPublic, ReviewsPublic, ReviewCreate, ReviewUpdate
+from app.schemas.review import ReviewPublic, ReviewsPublic, ReviewCreate, ReviewUpdate
 from app.services import review_service
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])

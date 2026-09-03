@@ -1,7 +1,8 @@
+"""API routes for Genre management and retrieval."""
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.api.deps import SessionDep, get_current_active_superuser
-from app.schemas import GenrePublic, GenresPublic, GenreCreate, GenreUpdate
+from app.schemas.genre import GenrePublic, GenresPublic, GenreCreate, GenreUpdate
 from app.services import genre_service
 
 router = APIRouter(prefix="/genres", tags=["genres"])
