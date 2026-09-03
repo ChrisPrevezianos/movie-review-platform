@@ -1,3 +1,4 @@
+"""Repository functions for User database operations, account status, and pagination."""
 import uuid
 from sqlmodel import Session, select
 from app.models.user import User
@@ -17,21 +18,25 @@ def create_user(*, session: Session, user_create: UserCreate) -> User:
     return db_user
 
 def get_user_by_id(*, session: Session, user_id: uuid.UUID) -> User | None:
+    """Return a user by ID, if it exists."""
     session_user = session.get(User, user_id)
     return session_user
 
 def get_user_by_email(*, session: Session, email: EmailStr) -> User | None:
+    """Return a user by exact email match, if it exists."""
     statement = select(User).where(User.email == email)
     session_user = session.exec(statement).first()
     return session_user
 
 def get_user_by_username(*, session: Session, username: str) -> User | None:
+    """Return a user by exact username match, if it exists."""
     statement = select(User).where(User.username == username)
     session_user = session.exec(statement).first()
     return session_user
 
-def get_users(*, session: Session) -> list[User]:
-    statement = select(User)
+def get_users(*, session: Session, skip: int = 0, limit: int = 10) -> list[User]:
+    """Return users with pagination, ordered alphabetically by username."""
+    statement = select(User).order_by(User.username.asc(), User.id.asc()).offset(skip).limit(limit)
     session_users = session.exec(statement).all()
     return list(session_users)
 
@@ -81,6 +86,24 @@ def reactivate_user(*, session: Session, db_user: User) -> User:
     session.commit()
     session.refresh(db_user)
     return db_user
+
+def get_active_users(*, session: Session, skip: int = 0, limit: int = 10) -> list[User]:
+    """Return active users with pagination, ordered alphabetically by username."""
+    statement = select(User).where(User.is_active == True).order_by(User.username.asc(), User.id.asc()).offset(skip).limit(limit)
+    session_users = session.exec(statement).all()
+    return list(session_users)
+
+def get_inactive_users(*, session: Session, skip: int = 0, limit: int = 10) -> list[User]:
+    """Return inactive users with pagination, ordered alphabetically by username."""
+    statement = select(User).where(User.is_active == False).order_by(User.username.asc(), User.id.asc()).offset(skip).limit(limit)
+    session_users = session.exec(statement).all()
+    return list(session_users)
+
+def count_users(*, session: Session) -> int:
+    """Return the total number of user accounts."""
+    statement = select(func.count()).select_from(User)
+    total_count = session.exec(statement).one()
+    return total_count
 
 def count_active_users(*, session: Session) -> int:
     """Return the number of active user accounts."""
