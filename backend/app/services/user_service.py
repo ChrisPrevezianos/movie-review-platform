@@ -1,3 +1,4 @@
+"""Service functions for User business rules, account management, authentication, and pagination."""
 import uuid
 from sqlmodel import Session
 from fastapi import HTTPException, status
@@ -26,10 +27,20 @@ def create_user(*, session: Session, user_create: UserCreate) -> User:
     return user_repo.create_user(session=session, user_create=user_create)
 
 def get_user_by_id(*, session: Session, user_id: uuid.UUID) -> User | None:
+    """Return a user by ID, if it exists."""
     return user_repo.get_user_by_id(session=session, user_id=user_id)
 
-def get_users(*, session: Session) -> list[User]:
-    return user_repo.get_users(session=session)
+def get_user_by_email(*, session: Session, email: EmailStr) -> User | None:
+    """Return a user by exact email match, if it exists."""
+    return user_repo.get_user_by_email(session=session, email=email)
+
+def get_user_by_username(*, session: Session, username: str) -> User | None:
+    """Return a user by exact username match, if it exists."""
+    return user_repo.get_user_by_username(session=session, username=username)
+
+def get_users(*, session: Session, skip: int = 0, limit: int = 10) -> list[User]:
+    """Return users with pagination."""
+    return user_repo.get_users(session=session, skip=skip, limit=limit)
 
 def update_user(*, session: Session, db_user: User, user_update: UserUpdate) -> User:
     """Update user data after validating email and username changes."""
@@ -133,10 +144,24 @@ def reactivate_user(*, session: Session, db_user: User) -> User:
         )
     return user_repo.reactivate_user(session=session, db_user=db_user)
 
+def get_active_users(*, session: Session, skip: int = 0, limit: int = 10) -> list[User]:
+    """Return active users with pagination."""
+    return user_repo.get_active_users(session=session, skip=skip, limit=limit)
+
+def get_inactive_users(*, session: Session, skip: int = 0, limit: int = 10) -> list[User]:
+    """Return inactive users with pagination."""
+    return user_repo.get_inactive_users(session=session, skip=skip, limit=limit)
+
+def count_users(*, session: Session) -> int:
+    """Return the total number of user accounts."""
+    return user_repo.count_users(session=session)
+
 def count_active_users(*, session: Session) -> int:
+    """Return the total number of active user accounts."""
     return user_repo.count_active_users(session=session)
 
 def count_inactive_users(*, session: Session) -> int:
+    """Return the total number of inactive user accounts."""
     return user_repo.count_inactive_users(session=session)
 
 def authenticate_user(*, session: Session, email: EmailStr, password: str) -> User | None:
