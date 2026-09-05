@@ -1,5 +1,6 @@
 import datetime
 import uuid
+from sqlalchemy import DateTime
 from typing import TYPE_CHECKING
 from sqlmodel import Field, SQLModel, Relationship
 from pydantic import EmailStr
