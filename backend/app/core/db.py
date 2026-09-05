@@ -1,6 +1,15 @@
 """Database engine setup and initial application data seeding."""
 from sqlmodel import Session, create_engine
 from app.core.config import settings
+
+# Import all models so SQLAlchemy can resolve relationships at runtime.
+from app.models.actor import Actor
+from app.models.director import Director
+from app.models.genre import Genre
+from app.models.movie import Movie
+from app.models.review import Review
+from app.models.user import User
+
 from app.schemas.user import UserCreate, UserUpdate
 from app.schemas.genre import GenreCreate
 from app.repositories import genre_repository as genre_repo
