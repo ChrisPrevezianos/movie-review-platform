@@ -10,11 +10,13 @@ from app.models.user import User
 from app.schemas.movie import MovieCreate, MovieUpdate
 from sqlalchemy import func
 
-def create_movie(*, session: Session, genres: list[Genre], movie_create: MovieCreate) -> Movie:
-    """Create and persist a movie with its selected genre relationships."""
-    movie_data = movie_create.model_dump(exclude={"genre_ids"})
+def create_movie(*, session: Session, genres: list[Genre], actors: list[Actor], directors: list[Director], movie_create: MovieCreate) -> Movie:
+    """Create and persist a movie with its genre, actor, and director relationships."""
+    movie_data = movie_create.model_dump(exclude={"genre_ids", "actors", "directors"}, mode="json")
     db_movie = Movie.model_validate(movie_data)
     db_movie.genres = genres
+    db_movie.actors = actors
+    db_movie.directors = directors
     session.add(db_movie)
     session.commit()
     session.refresh(db_movie)
@@ -31,12 +33,16 @@ def get_movies(*, session: Session, skip: int = 0, limit: int = 10) -> list[Movi
     session_movies = session.exec(statement).all()
     return list(session_movies)
 
-def update_movie(*, session: Session, db_movie: Movie, genres: list[Genre] | None, movie_update: MovieUpdate) -> Movie:
-    """Update movie fields and optionally replace its genre relationships."""
-    movie_data = movie_update.model_dump(exclude_unset=True, exclude={"genre_ids"})
+def update_movie(*, session: Session, db_movie: Movie, genres: list[Genre] | None, actors: list[Actor] | None, directors: list[Director] | None, movie_update: MovieUpdate) -> Movie:
+    """Update movie fields and optionally replace its genre, actor, and director relationships."""
+    movie_data = movie_update.model_dump(exclude_unset=True, exclude={"genre_ids", "actors", "directors"}, mode="json")
     db_movie.sqlmodel_update(movie_data)
     if genres is not None:
         db_movie.genres = genres
+    if actors is not None:
+        db_movie.actors = actors
+    if directors is not None:
+        db_movie.directors = directors
     session.add(db_movie)
     session.commit()
     session.refresh(db_movie)
@@ -100,23 +106,47 @@ def get_movies_by_director(*, session: Session, director_name: str, skip: int = 
     session_movies = session.exec(statement).all()
     return list(session_movies)
 
-def get_movies_by_min_rating(*, session: Session, min_rating: float, skip: int = 0, limit: int = 10) -> list[Movie]:
-    """Return movies whose average rating from active users meets the minimum rating.
-    Results are paginated and ordered by highest average rating first.
+def get_movies_by_min_rating(*, session: Session, min_rating: float, skip: int = 0, limit: int = 10) -> list[tuple[Movie, float]]:
     """
-    statement = select(Movie).join(Movie.reviews).join(User, Review.user_id == User.id).where(User.is_active == True).group_by(Movie.id).having(func.avg(Review.rating) >= min_rating).order_by(func.avg(Review.rating).desc(), Movie.release_year.desc(), Movie.id.desc()).offset(skip).limit(limit)
+    Return movies whose average rating from active users meets the minimum rating.
+
+    The query calculates the average Review.rating for each movie, filters out
+    movies below min_rating, and orders the results by highest average rating.
+
+    Movie and average_rating are both selected so the caller receives the movie
+    data together with the calculated rating used for filtering and ordering.
+    Results are paginated.
+    """
+    average_rating = func.avg(Review.rating).label("average_rating")
+    statement = select(Movie, average_rating).join(Movie.reviews).join(User, Review.user_id == User.id).where(User.is_active == True).group_by(Movie.id).having(func.avg(Review.rating) >= min_rating).order_by(func.avg(Review.rating).desc(), Movie.release_year.desc(), Movie.id.desc()).offset(skip).limit(limit)
     session_movies = session.exec(statement).all()
     return list(session_movies)
 
-def get_movies_ordered_by_rating(*, session: Session, skip: int = 0, limit: int = 10) -> list[Movie]:
-    """Return reviewed movies ordered by average rating from active users, with pagination."""
-    statement = select(Movie).join(Movie.reviews).join(User, Review.user_id == User.id).where(User.is_active == True).group_by(Movie.id).order_by(func.avg(Review.rating).desc(), Movie.release_year.desc(), Movie.id.desc()).offset(skip).limit(limit)
+def get_movies_ordered_by_rating(*, session: Session, skip: int = 0, limit: int = 10) -> list[tuple[Movie, float]]:
+    """
+    Return reviewed movies ordered by average rating from active users.
+
+    The query calculates the average Review.rating for each movie and selects
+    both the Movie and its calculated average_rating so the rating is available
+    in the API response as well as being used for ordering.
+    Results are paginated.
+    """
+    average_rating = func.avg(Review.rating).label("average_rating")
+    statement = select(Movie, average_rating).join(Movie.reviews).join(User, Review.user_id == User.id).where(User.is_active == True).group_by(Movie.id).order_by(func.avg(Review.rating).desc(), Movie.release_year.desc(), Movie.id.desc()).offset(skip).limit(limit)
     session_movies = session.exec(statement).all()
     return list(session_movies)
 
-def get_top_rated_movies(*, session: Session, limit: int = 10) -> list[Movie]:
-    """Return the highest-rated movies using reviews from active users, up to the given limit."""
-    statement = select(Movie).join(Movie.reviews).join(User, Review.user_id == User.id).where(User.is_active == True).group_by(Movie.id).order_by(func.avg(Review.rating).desc(), Movie.release_year.desc(), Movie.id.desc()).limit(limit)
+def get_top_rated_movies(*, session: Session, limit: int = 10) -> list[tuple[Movie, float]]:
+    """
+    Return the highest-rated movies using reviews from active users.
+
+    The query calculates the average Review.rating for each movie and selects
+    both the Movie and its calculated average_rating so the returned result
+    includes the rating used to rank the movies.
+    Results are limited to the requested number of movies.
+    """
+    average_rating = func.avg(Review.rating).label("average_rating")
+    statement = select(Movie, average_rating).join(Movie.reviews).join(User, Review.user_id == User.id).where(User.is_active == True).group_by(Movie.id).order_by(func.avg(Review.rating).desc(), Movie.release_year.desc(), Movie.id.desc()).limit(limit)
     session_movies = session.exec(statement).all()
     return list(session_movies)
 

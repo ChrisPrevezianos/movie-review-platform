@@ -2,14 +2,18 @@
 import uuid
 from sqlmodel import Session
 from app.models.movie import Movie
+from app.models.actor import Actor
+from app.models.director import Director
 from app.schemas.movie import MovieCreate, MovieUpdate
 from app.repositories import movie_repository as movie_repo
 from app.repositories import review_repository as review_repo
 from app.repositories import genre_repository as genre_repo
+from app.repositories import actor_repository as actor_repo
+from app.repositories import director_repository as director_repo
 from fastapi import HTTPException, status
 
 def create_movie(*, session: Session, movie_create: MovieCreate) -> Movie:
-    """Create a movie after validating duplicate title/year and resolving its selected genres."""
+    """Create a movie after validating duplicates and resolving its genre, actor, and director relationships."""
     existing_title = movie_repo.get_movie_by_exact_title(session=session, title=movie_create.title)
     if existing_title:
         if any(movie.release_year == movie_create.release_year for movie in existing_title):
@@ -17,6 +21,12 @@ def create_movie(*, session: Session, movie_create: MovieCreate) -> Movie:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="The movie with this title and release year already exists in the system.",
             )
+
+    if len(movie_create.genre_ids) != len(set(movie_create.genre_ids)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="One or more genre IDs are duplicated."
+        )
 
     genres = []
     for genre_id in movie_create.genre_ids:
@@ -27,8 +37,50 @@ def create_movie(*, session: Session, movie_create: MovieCreate) -> Movie:
                 detail="One or more genre IDs do not exist.",
             )
         genres.append(genre_obj)
+
+    seen_actors = set()
+    movie_actors = []
+    for actor_in in movie_create.actors:
+        first_name = actor_in.first_name.strip()
+        last_name = actor_in.last_name.strip()
+        actor_name = (first_name.lower(), last_name.lower())
+
+        if actor_name in seen_actors:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="One or more actors are duplicated."
+            )
+        seen_actors.add(actor_name)
+
+        existing_actor = actor_repo.get_actor_by_name(session=session, actor_first_name=first_name, actor_last_name=last_name)
+        if existing_actor is None:
+            new_actor = Actor(first_name=first_name, last_name=last_name, birth_date=actor_in.birth_date)
+            movie_actors.append(new_actor)
+        else:
+            movie_actors.append(existing_actor)
+
+    seen_directors = set()
+    movie_directors = []
+    for director_in in movie_create.directors:
+        first_name = director_in.first_name.strip()
+        last_name = director_in.last_name.strip()
+        director_name = (first_name.lower(), last_name.lower())
+
+        if director_name in seen_directors:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="One or more directors are duplicated."
+            )
+        seen_directors.add(director_name)
+
+        existing_director = director_repo.get_director_by_name(session=session, director_first_name=first_name, director_last_name=last_name)
+        if existing_director is None:
+            new_director = Director(first_name=first_name, last_name=last_name, birth_date=director_in.birth_date)
+            movie_directors.append(new_director)
+        else:
+            movie_directors.append(existing_director)
         
-    return movie_repo.create_movie(session=session, genres=genres, movie_create=movie_create)
+    return movie_repo.create_movie(session=session, genres=genres, actors=movie_actors, directors=movie_directors, movie_create=movie_create)
 
 def get_movie_by_id(*, session: Session, movie_id: uuid.UUID) -> Movie | None:
     """Return a movie by ID, if it exists."""
@@ -39,7 +91,7 @@ def get_movies(*, session: Session, skip: int = 0, limit: int = 10) -> list[Movi
     return movie_repo.get_movies(session=session, skip=skip, limit=limit)
 
 def update_movie(*, session: Session, db_movie: Movie, movie_update: MovieUpdate) -> Movie:
-    """Update a movie while enforcing title/year rules and optionally updating its genres."""
+    """Update a movie while enforcing title/year rules and optionally updating its relationships."""
     if movie_update.title is not None or movie_update.release_year is not None:
         if movie_update.title == db_movie.title:
             raise HTTPException(
@@ -65,6 +117,12 @@ def update_movie(*, session: Session, db_movie: Movie, movie_update: MovieUpdate
 
     genres = None
     if movie_update.genre_ids is not None:
+        if len(movie_update.genre_ids) != len(set(movie_update.genre_ids)):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="One or more genre IDs are duplicated."
+            )
+
         genres = []
         for genre_id in movie_update.genre_ids:
             genre_obj = genre_repo.get_genre_by_id(session=session, genre_id=genre_id)
@@ -75,7 +133,53 @@ def update_movie(*, session: Session, db_movie: Movie, movie_update: MovieUpdate
                 )
             genres.append(genre_obj)
 
-    return movie_repo.update_movie(session=session, db_movie=db_movie, genres=genres, movie_update=movie_update)
+    movie_actors = None
+    if movie_update.actors is not None:
+        seen_actors = set()
+        movie_actors = []
+        for actor_in in movie_update.actors:
+            first_name = actor_in.first_name.strip()
+            last_name = actor_in.last_name.strip()
+            actor_name = (first_name.lower(), last_name.lower())
+
+            if actor_name in seen_actors:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="One or more actors are duplicated."
+                )
+            seen_actors.add(actor_name)
+
+            existing_actor = actor_repo.get_actor_by_name(session=session, actor_first_name=first_name, actor_last_name=last_name)
+            if existing_actor is None:
+                new_actor = Actor(first_name=first_name, last_name=last_name, birth_date=actor_in.birth_date)
+                movie_actors.append(new_actor)
+            else:
+                movie_actors.append(existing_actor)
+
+    movie_directors = None
+    if movie_update.directors is not None:
+        seen_directors = set()
+        movie_directors = []
+        for director_in in movie_update.directors:
+            first_name = director_in.first_name.strip()
+            last_name = director_in.last_name.strip()
+            director_name = (first_name.lower(), last_name.lower())
+
+            if director_name in seen_directors:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="One or more directors are duplicated."
+                )
+            seen_directors.add(director_name)
+
+            existing_director = director_repo.get_director_by_name(session=session, director_first_name=first_name, director_last_name=last_name)
+            if existing_director is None:
+                new_director = Director(first_name=first_name, last_name=last_name, birth_date=director_in.birth_date)
+                movie_directors.append(new_director)
+            else:
+                movie_directors.append(existing_director)
+
+    return movie_repo.update_movie(session=session, db_movie=db_movie, genres=genres, actors=movie_actors, directors=movie_directors, movie_update=movie_update)
 
 def delete_movie(*, session: Session, db_movie: Movie) -> None:
     """Delete a movie only if it has no associated reviews."""
@@ -111,15 +215,15 @@ def get_movies_by_director(*, session: Session, director_name: str, skip: int = 
     """Return movies matching a director name with pagination."""
     return movie_repo.get_movies_by_director(session=session, director_name=director_name, skip=skip, limit=limit)
 
-def get_movies_by_min_rating(*, session: Session, min_rating: float, skip: int = 0, limit: int = 10) -> list[Movie]:
+def get_movies_by_min_rating(*, session: Session, min_rating: float, skip: int = 0, limit: int = 10) -> list[tuple[Movie, float]]:
     """Return movies whose average rating from active users meets the minimum, with pagination."""
     return movie_repo.get_movies_by_min_rating(session=session, min_rating=min_rating, skip=skip, limit=limit)
 
-def get_movies_ordered_by_rating(*, session: Session, skip: int = 0, limit: int = 10) -> list[Movie]:
+def get_movies_ordered_by_rating(*, session: Session, skip: int = 0, limit: int = 10) -> list[tuple[Movie, float]]:
     """Return reviewed movies ordered by average rating from active users, with pagination."""
     return movie_repo.get_movies_ordered_by_rating(session=session, skip=skip, limit=limit)
 
-def get_top_rated_movies(*, session: Session, limit: int = 10) -> list[Movie]:
+def get_top_rated_movies(*, session: Session, limit: int = 10) -> list[tuple[Movie, float]]:
     """Return the highest-rated movies using reviews from active users, up to the given limit."""
     return movie_repo.get_top_rated_movies(session=session, limit=limit)
 

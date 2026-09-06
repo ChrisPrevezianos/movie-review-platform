@@ -2,7 +2,7 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.api.deps import SessionDep, get_current_active_superuser
-from app.schemas.movie import MoviesPublic, MoviePublic, MovieCreate, MovieUpdate, AgeRating
+from app.schemas.movie import MoviesPublic, MoviePublic, MovieCreate, MovieUpdate, AgeRating, MovieWithRatingPublic, MoviesWithRatingPublic
 from app.services import movie_service
 
 router = APIRouter(prefix="/movies", tags=["movies"])
@@ -107,10 +107,15 @@ def get_movies_by_director(*, session: SessionDep, director: str, page: int = 1,
     movies_public = [MoviePublic.model_validate(movie) for movie in movies]
     return MoviesPublic(movies=movies_public, count=total_count)
 
-@router.get("/min-rating", response_model=MoviesPublic)
+@router.get("/min-rating", response_model=MoviesWithRatingPublic)
 def get_movies_by_min_rating(*, session: SessionDep, min_rating: 
-    float, page: int = 1, page_size: int = 10) -> MoviesPublic:
-    """Return movies meeting the minimum average rating, with pagination."""
+    float, page: int = 1, page_size: int = 10) -> MoviesWithRatingPublic:
+    """
+    Return movies meeting the minimum average rating, with pagination.
+
+    Each result includes the Movie data together with the calculated average_rating.
+    The calculated rating is added to MovieWithRatingPublic when building the response.
+    """
     skip = paginated_check(page=page, page_size=page_size)
     if min_rating < 1 or min_rating > 10:
         raise HTTPException(
@@ -119,21 +124,31 @@ def get_movies_by_min_rating(*, session: SessionDep, min_rating:
         )
     movies = movie_service.get_movies_by_min_rating(session=session, min_rating=min_rating, skip=skip, limit=page_size)
     total_count = movie_service.count_movies_by_min_rating(session=session, min_rating=min_rating)
-    movies_public = [MoviePublic.model_validate(movie) for movie in movies]
-    return MoviesPublic(movies=movies_public, count=total_count)
+    movies_public = [MovieWithRatingPublic.model_validate(movie, update={"average_rating": float(average_rating)}) for movie, average_rating in movies]
+    return MoviesWithRatingPublic(movies=movies_public, count=total_count)
 
-@router.get("/rating", response_model=MoviesPublic)
-def get_movies_ordered_by_rating(*, session: SessionDep, page: int = 1, page_size: int = 10) -> MoviesPublic:
-    """Return reviewed movies ordered by average rating, with pagination."""
+@router.get("/rating", response_model=MoviesWithRatingPublic)
+def get_movies_ordered_by_rating(*, session: SessionDep, page: int = 1, page_size: int = 10) -> MoviesWithRatingPublic:
+    """
+    Return reviewed movies ordered by average rating, with pagination.
+
+    Each result includes the Movie data together with the calculated average_rating.
+    The calculated rating is added to MovieWithRatingPublic when building the response.
+    """
     skip = paginated_check(page=page, page_size=page_size)
     movies = movie_service.get_movies_ordered_by_rating(session=session, skip=skip, limit=page_size)
     total_count = movie_service.count_movies_ordered_by_rating(session=session)
-    movies_public = [MoviePublic.model_validate(movie) for movie in movies]
-    return MoviesPublic(movies=movies_public, count=total_count)
+    movies_public = [MovieWithRatingPublic.model_validate(movie, update={"average_rating": float(average_rating)}) for movie, average_rating in movies]
+    return MoviesWithRatingPublic(movies=movies_public, count=total_count)
 
-@router.get("/top-rated", response_model=MoviesPublic)
-def get_top_rated_movies(*, session: SessionDep, limit: int = 10) -> MoviesPublic:
-    """Return the highest-rated movies up to the requested limit."""
+@router.get("/top-rated", response_model=MoviesWithRatingPublic)
+def get_top_rated_movies(*, session: SessionDep, limit: int = 10) -> MoviesWithRatingPublic:
+    """
+    Return the highest-rated movies up to the requested limit.
+
+    Each result includes the Movie data together with the calculated average_rating.
+    The calculated rating is added to MovieWithRatingPublic when building the response.
+    """
     if limit < 1:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -145,8 +160,8 @@ def get_top_rated_movies(*, session: SessionDep, limit: int = 10) -> MoviesPubli
             detail="Limit cannot be greater than 50"
         )
     movies = movie_service.get_top_rated_movies(session=session, limit=limit)
-    movies_public = [MoviePublic.model_validate(movie) for movie in movies]
-    return MoviesPublic(movies=movies_public, count=len(movies))
+    movies_public = [MovieWithRatingPublic.model_validate(movie, update={"average_rating": float(average_rating)}) for movie, average_rating in movies]
+    return MoviesWithRatingPublic(movies=movies_public, count=len(movies))
 
 @router.get("/{movie_id}", response_model=MoviePublic)
 def get_movie(*, session: SessionDep, movie_id: uuid.UUID) -> MoviePublic:
@@ -161,27 +176,17 @@ def get_movie(*, session: SessionDep, movie_id: uuid.UUID) -> MoviePublic:
 
 @router.post("", response_model=MoviePublic, status_code=status.HTTP_201_CREATED, dependencies=[Depends(get_current_active_superuser)])
 def create_movie(*, session: SessionDep, movie_in: MovieCreate) -> MoviePublic:
-    """Create a movie with selected genres. Admin only."""
-    if len(movie_in.genre_ids) != len(set(movie_in.genre_ids)):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="One or more genre IDs are duplicated."
-        )
+    """Create a movie with its genres, actors, and directors. Admin only."""
     return movie_service.create_movie(session=session, movie_create=movie_in)
 
 @router.patch("/{movie_id}", response_model=MoviePublic, status_code=status.HTTP_200_OK, dependencies=[Depends(get_current_active_superuser)])
 def update_movie(*, session: SessionDep, movie_id: uuid.UUID, movie_in: MovieUpdate) -> MoviePublic:
-    """Update an existing movie and optionally its genres. Admin only."""
+    """Update an existing movie and optionally its relationships. Admin only."""
     movie = movie_service.get_movie_by_id(session=session, movie_id=movie_id)
     if not movie:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Movie not found"
-        )
-    if movie_in.genre_ids is not None and len(movie_in.genre_ids) != len(set(movie_in.genre_ids)):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="One or more genre IDs are duplicated."
         )
     return movie_service.update_movie(session=session, db_movie=movie, movie_update=movie_in)
 
