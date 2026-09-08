@@ -4,6 +4,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { MoviesService } from "@/client"
+import { ReviewsList } from "@/components/Reviews/ReviewsList"
 
 export const Route = createFileRoute("/_layout/movies/$movieId")({
     component: MovieDetails,
@@ -120,6 +121,7 @@ function MovieDetails() {
           >
             Watch trailer
           </a>
+          <ReviewsList movieId={movie.id} />
         </div>
       </div>
     </div>
