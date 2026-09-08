@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { MoviesService } from "@/client"
 import { ReviewsList } from "@/components/Reviews/ReviewsList"
+import { CreateReviewForm } from "@/components/Reviews/CreateReviewForm"
+import { useState } from "react"
 
 export const Route = createFileRoute("/_layout/movies/$movieId")({
     component: MovieDetails,
@@ -15,6 +17,8 @@ export const Route = createFileRoute("/_layout/movies/$movieId")({
  */
 function MovieDetails() {
     const { movieId } = Route.useParams()
+
+    const [showReviewForm, setShowReviewForm] = useState(false)
 
     const { data: movie, isLoading } = useQuery({
         queryKey: ["movie", movieId],
@@ -121,7 +125,25 @@ function MovieDetails() {
           >
             Watch trailer
           </a>
-          <ReviewsList movieId={movie.id} />
+
+          <div className="w-full max-w-2xl">
+            <div className="mb-1 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowReviewForm((current) => !current)}
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {showReviewForm ? "Cancel" : "+ Review"}
+              </button>
+            </div>
+            <ReviewsList movieId={movie.id} />
+
+            {showReviewForm && (
+              <div className="mt-4">
+                <CreateReviewForm movieId={movie.id} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
