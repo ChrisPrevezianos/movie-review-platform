@@ -2,6 +2,7 @@
  * Reusable card component for displaying public movie information.
  */
 import type { MoviePublic } from "@/client"
+import { Link } from "@tanstack/react-router"
 
 /**
  * Display a movie poster, title, release year, age rating, and genres.
@@ -20,12 +21,19 @@ export function MovieCard( { movie } : { movie: MoviePublic}) {
                     {movie.genres.map((genre) => (
                     <span
                         key={genre.id}
-                        className="rounded-full bg-primary px-2 py-1 text-xs text-primary-foreground"
+                        className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground"
                     >
                         {genre.name}
                     </span>
                     ))}
                 </div>
+                <Link
+                    to="/movies/$movieId"
+                    params={{ movieId: movie.id }}
+                    className="mt-2 inline-flex w-fit rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                    View Details
+                </Link>
             </div>
         </div>
     )
