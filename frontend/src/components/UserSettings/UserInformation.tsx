@@ -1,0 +1,180 @@
+/**
+ * User profile component for viewing and updating username and email.
+ */
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+
+import { UsersService, type UserUpdateMe } from "@/client"
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { LoadingButton } from "@/components/ui/loading-button"
+import useAuth from "@/hooks/useAuth"
+import useCustomToast from "@/hooks/useCustomToast"
+import { cn } from "@/lib/utils"
+import { handleError } from "@/utils"
+
+const formSchema = z.object({
+  username: z.string().max(50),
+  email: z.email({ message: "Invalid email address" }),
+})
+
+type FormData = z.infer<typeof formSchema>
+
+/**
+ * Display and update the current user's profile information.
+ */
+const UserInformation = () => {
+  const queryClient = useQueryClient()
+  const { showSuccessToast, showErrorToast } = useCustomToast()
+  const [editMode, setEditMode] = useState(false)
+  const { user: currentUser } = useAuth()
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    mode: "onBlur",
+    criteriaMode: "all",
+    defaultValues: {
+      username: currentUser?.username ?? undefined,
+      email: currentUser?.email,
+    },
+  })
+
+  /** Toggle between profile view and edit mode. */
+  const toggleEditMode = () => {
+    setEditMode(!editMode)
+  }
+
+  const mutation = useMutation({
+    mutationFn: (data: UserUpdateMe) =>
+      UsersService.updateUserMe({ body: data }),
+    onSuccess: () => {
+      showSuccessToast("User updated successfully")
+      toggleEditMode()
+    },
+    onError: handleError.bind(showErrorToast),
+    onSettled: () => {
+      queryClient.invalidateQueries()
+    },
+  })
+
+  /** Submit only profile fields that have changed. */
+  const onSubmit = (data: FormData) => {
+    const updateData: UserUpdateMe = {}
+
+    // only include fields that have changed
+    if (data.username !== currentUser?.username) {
+      updateData.username = data.username
+    }
+    if (data.email !== currentUser?.email) {
+      updateData.email = data.email
+    }
+
+    mutation.mutate(updateData)
+  }
+
+  /** Discard unsaved changes and leave edit mode. */
+  const onCancel = () => {
+    form.reset()
+    toggleEditMode()
+  }
+
+  return (
+    <div className="max-w-md">
+      <h3 className="text-lg font-semibold py-4">User Information</h3>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col gap-4"
+        >
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) =>
+              editMode ? (
+                <FormItem>
+                  <FormLabel>Username</FormLabel>
+                  <FormControl>
+                    <Input type="text" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              ) : (
+                <FormItem>
+                  <FormLabel>Username</FormLabel>
+                  <p
+                    className={cn(
+                      "py-2 truncate max-w-sm",
+                      !field.value && "text-muted-foreground",
+                    )}
+                  >
+                    {field.value || "N/A"}
+                  </p>
+                </FormItem>
+              )
+            }
+          />
+
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) =>
+              editMode ? (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              ) : (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <p className="py-2 truncate max-w-sm">{field.value}</p>
+                </FormItem>
+              )
+            }
+          />
+
+          <div className="flex gap-3">
+            {editMode ? (
+              <>
+                <LoadingButton
+                  type="submit"
+                  loading={mutation.isPending}
+                  disabled={!form.formState.isDirty}
+                >
+                  Save
+                </LoadingButton>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  disabled={mutation.isPending}
+                >
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <Button type="button" onClick={toggleEditMode}>
+                Edit
+              </Button>
+            )}
+          </div>
+        </form>
+      </Form>
+    </div>
+  )
+}
+
+export default UserInformation
