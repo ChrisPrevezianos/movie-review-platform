@@ -4,11 +4,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { ReviewsService, type ReviewCreate } from "@/client"
+import { AxiosError } from "axios"
 
 /**
  * Create a review for the selected movie.
  */
-export function CreateReviewForm({ movieId } : { movieId: string}) {
+export function CreateReviewForm({ movieId, onCreated } : { movieId: string, onCreated: () => void}) {
     const queryClient = useQueryClient()
 
     const form = useForm<ReviewCreate>({
@@ -34,12 +35,18 @@ export function CreateReviewForm({ movieId } : { movieId: string}) {
             })
 
             form.reset()
+            onCreated()
         },
     })
 
     function onSubmit(data: ReviewCreate) {
         mutation.mutate(data)
     }
+
+    const errorMessage =
+        mutation.error instanceof AxiosError
+        ? (mutation.error.response?.data as { detail?: string } | undefined)?.detail
+        : undefined
 
     return (
         <form
@@ -110,13 +117,7 @@ export function CreateReviewForm({ movieId } : { movieId: string}) {
 
             {mutation.isError && (
             <p className="text-sm text-destructive">
-                Unable to submit review. Please try again.
-            </p>
-            )}
-
-            {mutation.isSuccess && (
-            <p className="text-sm text-muted-foreground">
-                Review submitted successfully.
+                {errorMessage ?? "Unable to submit review. Please try again."}
             </p>
             )}
         </form>

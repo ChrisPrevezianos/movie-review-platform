@@ -140,7 +140,7 @@ function MovieDetails() {
 
             {showReviewForm && (
               <div className="mt-4">
-                <CreateReviewForm movieId={movie.id} />
+                <CreateReviewForm movieId={movie.id} onCreated={() => setShowReviewForm(false)} />
               </div>
             )}
           </div>
