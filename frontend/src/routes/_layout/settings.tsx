@@ -6,10 +6,12 @@ import ChangePassword from "@/components/UserSettings/ChangePassword"
 import UserInformation from "@/components/UserSettings/UserInformation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import useAuth from "@/hooks/useAuth"
+import DeactivateAccount from "@/components/UserSettings/DeactivateAccount"
 
 const tabsConfig = [
   { value: "my-profile", title: "My profile", component: UserInformation },
   { value: "password", title: "Password", component: ChangePassword },
+  { value: "account", title: "Account", component: DeactivateAccount },
 ]
 
 /**
