@@ -1,7 +1,7 @@
 /**
  * Main application sidebar for authenticated users.
  */
-import { Home } from "lucide-react"
+import { Home, Plus } from "lucide-react"
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import { Logo } from "@/components/Common/Logo"
 import {
@@ -13,6 +13,7 @@ import {
 import useAuth from "@/hooks/useAuth"
 import { type Item, Main } from "./Main"
 import { User } from "./User"
+import { useAdmin } from "@/hooks/useAdmin"
 
 const baseItems: Item[] = [
   { icon: Home, title: "Dashboard", path: "/" },
@@ -23,8 +24,14 @@ const baseItems: Item[] = [
  */
 export function AppSidebar() {
   const { user: currentUser } = useAuth()
+  const { isAdmin } = useAdmin()
 
-  const items = baseItems
+  const items = isAdmin
+    ? [
+        ...baseItems,
+        { icon: Plus, title: "Create Movie", path: "/movies/create" }
+      ]
+    : baseItems
 
   return (
     <Sidebar collapsible="icon">
