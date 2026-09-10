@@ -7,6 +7,8 @@ import { MoviesService } from "@/client"
 import { ReviewsList } from "@/components/Reviews/ReviewsList"
 import { CreateReviewForm } from "@/components/Reviews/CreateReviewForm"
 import { useState } from "react"
+import { useAdmin } from "@/hooks/useAdmin"
+import { DeleteMovieButton } from "@/components/Movies/DeleteMovieButton"
 
 export const Route = createFileRoute("/_layout/movies/$movieId")({
     component: MovieDetails,
@@ -19,6 +21,7 @@ function MovieDetails() {
     const { movieId } = Route.useParams()
 
     const [showReviewForm, setShowReviewForm] = useState(false)
+    const { isAdmin } = useAdmin()
 
     const { data: movie, isLoading } = useQuery({
         queryKey: ["movie", movieId],
@@ -36,12 +39,27 @@ function MovieDetails() {
 
     return (
     <div className="flex flex-col gap-8">
-      <Link
-        to="/"
-        className="w-fit text-sm text-muted-foreground hover:text-foreground"
-      >
-        ← Back to movies
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link
+          to="/"
+          className="w-fit text-sm text-muted-foreground hover:text-foreground"
+        >
+          ← Back to movies
+        </Link>
+
+        {isAdmin && (
+          <div className="flex items-center gap-4">
+            <Link
+              to="/movies/$movieId/edit"
+              params={{ movieId: movie.id }}
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Edit
+            </Link>
+            <DeleteMovieButton movieId={movie.id} />
+          </div>
+        )}
+      </div>
 
       <div className="grid gap-8 md:grid-cols-[300px_1fr]">
         <div>
