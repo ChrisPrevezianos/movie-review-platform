@@ -16,6 +16,7 @@ import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutMoviesMovieIdRouteImport } from './routes/_layout/movies.$movieId'
 import { Route as LayoutMoviesCreateRouteImport } from './routes/_layout/movies.create'
+import { Route as LayoutMoviesMovieIdEditRouteImport } from './routes/_layout/movies.$movieId_.edit'
 
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
@@ -51,6 +52,11 @@ const LayoutMoviesCreateRoute = LayoutMoviesCreateRouteImport.update({
   path: '/movies/create',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutMoviesMovieIdEditRoute = LayoutMoviesMovieIdEditRouteImport.update({
+  id: '/movies/$movieId_/edit',
+  path: '/movies/$movieId/edit',
+  getParentRoute: () => LayoutRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof LayoutSettingsRoute
   '/movies/$movieId': typeof LayoutMoviesMovieIdRoute
   '/movies/create': typeof LayoutMoviesCreateRoute
+  '/movies/$movieId/edit': typeof LayoutMoviesMovieIdEditRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/': typeof LayoutIndexRoute
   '/movies/$movieId': typeof LayoutMoviesMovieIdRoute
   '/movies/create': typeof LayoutMoviesCreateRoute
+  '/movies/$movieId/edit': typeof LayoutMoviesMovieIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/movies/$movieId': typeof LayoutMoviesMovieIdRoute
   '/_layout/movies/create': typeof LayoutMoviesCreateRoute
+  '/_layout/movies/$movieId_/edit': typeof LayoutMoviesMovieIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/movies/$movieId'
     | '/movies/create'
+    | '/movies/$movieId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/movies/$movieId'
     | '/movies/create'
+    | '/movies/$movieId/edit'
   id:
     | '__root__'
     | '/_layout'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '/_layout/'
     | '/_layout/movies/$movieId'
     | '/_layout/movies/create'
+    | '/_layout/movies/$movieId_/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -163,6 +175,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutMoviesCreateRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/movies/$movieId_/edit': {
+      id: '/_layout/movies/$movieId_/edit'
+      path: '/movies/$movieId/edit'
+      fullPath: '/movies/$movieId/edit'
+      preLoaderRoute: typeof LayoutMoviesMovieIdEditRouteImport
+      parentRoute: typeof LayoutRoute
+    }
   }
 }
 
@@ -171,6 +190,7 @@ interface LayoutRouteChildren {
   LayoutIndexRoute: typeof LayoutIndexRoute
   LayoutMoviesMovieIdRoute: typeof LayoutMoviesMovieIdRoute
   LayoutMoviesCreateRoute: typeof LayoutMoviesCreateRoute
+  LayoutMoviesMovieIdEditRoute: typeof LayoutMoviesMovieIdEditRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
@@ -178,6 +198,7 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutIndexRoute: LayoutIndexRoute,
   LayoutMoviesMovieIdRoute: LayoutMoviesMovieIdRoute,
   LayoutMoviesCreateRoute: LayoutMoviesCreateRoute,
+  LayoutMoviesMovieIdEditRoute: LayoutMoviesMovieIdEditRoute,
 }
 
 const LayoutRouteWithChildren =
