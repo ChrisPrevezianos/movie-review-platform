@@ -1,7 +1,7 @@
 /**
  * Actor detail page with related movies.
  */
-import { Link, createFileRoute } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { ActorsService, MoviesService } from "@/client"
 import { MovieCard } from "@/components/Movies/MovieCard"
@@ -61,12 +61,13 @@ function ActorDetails() {
     return (
         <div className="space-y-8 py-6">
             <div>
-                <Link
-                    to="/"
+                <button
+                    type="button"
+                    onClick={() => window.history.back()}
                     className="w-fit text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
-                    ← Back to movies
-                </Link>
+                    ← Back
+                </button>
             </div>
 
             <div>
