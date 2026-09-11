@@ -15,6 +15,9 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutUsersRouteImport } from './routes/_layout/users'
+import { Route as LayoutActorsActorIdRouteImport } from './routes/_layout/actors.$actorId'
+import { Route as LayoutDirectorsDirectorIdRouteImport } from './routes/_layout/directors.$directorId'
+import { Route as LayoutGenresGenreIdRouteImport } from './routes/_layout/genres.$genreId'
 import { Route as LayoutMoviesMovieIdRouteImport } from './routes/_layout/movies.$movieId'
 import { Route as LayoutMoviesCreateRouteImport } from './routes/_layout/movies.create'
 import { Route as LayoutMoviesMovieIdEditRouteImport } from './routes/_layout/movies.$movieId_.edit'
@@ -48,6 +51,22 @@ const LayoutUsersRoute = LayoutUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutActorsActorIdRoute = LayoutActorsActorIdRouteImport.update({
+  id: '/actors/$actorId',
+  path: '/actors/$actorId',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutDirectorsDirectorIdRoute =
+  LayoutDirectorsDirectorIdRouteImport.update({
+    id: '/directors/$directorId',
+    path: '/directors/$directorId',
+    getParentRoute: () => LayoutRoute,
+  } as any)
+const LayoutGenresGenreIdRoute = LayoutGenresGenreIdRouteImport.update({
+  id: '/genres/$genreId',
+  path: '/genres/$genreId',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutMoviesMovieIdRoute = LayoutMoviesMovieIdRouteImport.update({
   id: '/movies/$movieId',
   path: '/movies/$movieId',
@@ -70,6 +89,9 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/settings': typeof LayoutSettingsRoute
   '/users': typeof LayoutUsersRoute
+  '/actors/$actorId': typeof LayoutActorsActorIdRoute
+  '/directors/$directorId': typeof LayoutDirectorsDirectorIdRoute
+  '/genres/$genreId': typeof LayoutGenresGenreIdRoute
   '/movies/$movieId': typeof LayoutMoviesMovieIdRoute
   '/movies/create': typeof LayoutMoviesCreateRoute
   '/movies/$movieId/edit': typeof LayoutMoviesMovieIdEditRoute
@@ -80,6 +102,9 @@ export interface FileRoutesByTo {
   '/settings': typeof LayoutSettingsRoute
   '/users': typeof LayoutUsersRoute
   '/': typeof LayoutIndexRoute
+  '/actors/$actorId': typeof LayoutActorsActorIdRoute
+  '/directors/$directorId': typeof LayoutDirectorsDirectorIdRoute
+  '/genres/$genreId': typeof LayoutGenresGenreIdRoute
   '/movies/$movieId': typeof LayoutMoviesMovieIdRoute
   '/movies/create': typeof LayoutMoviesCreateRoute
   '/movies/$movieId/edit': typeof LayoutMoviesMovieIdEditRoute
@@ -92,6 +117,9 @@ export interface FileRoutesById {
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/users': typeof LayoutUsersRoute
   '/_layout/': typeof LayoutIndexRoute
+  '/_layout/actors/$actorId': typeof LayoutActorsActorIdRoute
+  '/_layout/directors/$directorId': typeof LayoutDirectorsDirectorIdRoute
+  '/_layout/genres/$genreId': typeof LayoutGenresGenreIdRoute
   '/_layout/movies/$movieId': typeof LayoutMoviesMovieIdRoute
   '/_layout/movies/create': typeof LayoutMoviesCreateRoute
   '/_layout/movies/$movieId_/edit': typeof LayoutMoviesMovieIdEditRoute
@@ -104,6 +132,9 @@ export interface FileRouteTypes {
     | '/signup'
     | '/settings'
     | '/users'
+    | '/actors/$actorId'
+    | '/directors/$directorId'
+    | '/genres/$genreId'
     | '/movies/$movieId'
     | '/movies/create'
     | '/movies/$movieId/edit'
@@ -114,6 +145,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users'
     | '/'
+    | '/actors/$actorId'
+    | '/directors/$directorId'
+    | '/genres/$genreId'
     | '/movies/$movieId'
     | '/movies/create'
     | '/movies/$movieId/edit'
@@ -125,6 +159,9 @@ export interface FileRouteTypes {
     | '/_layout/settings'
     | '/_layout/users'
     | '/_layout/'
+    | '/_layout/actors/$actorId'
+    | '/_layout/directors/$directorId'
+    | '/_layout/genres/$genreId'
     | '/_layout/movies/$movieId'
     | '/_layout/movies/create'
     | '/_layout/movies/$movieId_/edit'
@@ -180,6 +217,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutUsersRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/actors/$actorId': {
+      id: '/_layout/actors/$actorId'
+      path: '/actors/$actorId'
+      fullPath: '/actors/$actorId'
+      preLoaderRoute: typeof LayoutActorsActorIdRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/directors/$directorId': {
+      id: '/_layout/directors/$directorId'
+      path: '/directors/$directorId'
+      fullPath: '/directors/$directorId'
+      preLoaderRoute: typeof LayoutDirectorsDirectorIdRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/genres/$genreId': {
+      id: '/_layout/genres/$genreId'
+      path: '/genres/$genreId'
+      fullPath: '/genres/$genreId'
+      preLoaderRoute: typeof LayoutGenresGenreIdRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/movies/$movieId': {
       id: '/_layout/movies/$movieId'
       path: '/movies/$movieId'
@@ -208,6 +266,9 @@ interface LayoutRouteChildren {
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutUsersRoute: typeof LayoutUsersRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
+  LayoutActorsActorIdRoute: typeof LayoutActorsActorIdRoute
+  LayoutDirectorsDirectorIdRoute: typeof LayoutDirectorsDirectorIdRoute
+  LayoutGenresGenreIdRoute: typeof LayoutGenresGenreIdRoute
   LayoutMoviesMovieIdRoute: typeof LayoutMoviesMovieIdRoute
   LayoutMoviesCreateRoute: typeof LayoutMoviesCreateRoute
   LayoutMoviesMovieIdEditRoute: typeof LayoutMoviesMovieIdEditRoute
@@ -217,6 +278,9 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutUsersRoute: LayoutUsersRoute,
   LayoutIndexRoute: LayoutIndexRoute,
+  LayoutActorsActorIdRoute: LayoutActorsActorIdRoute,
+  LayoutDirectorsDirectorIdRoute: LayoutDirectorsDirectorIdRoute,
+  LayoutGenresGenreIdRoute: LayoutGenresGenreIdRoute,
   LayoutMoviesMovieIdRoute: LayoutMoviesMovieIdRoute,
   LayoutMoviesCreateRoute: LayoutMoviesCreateRoute,
   LayoutMoviesMovieIdEditRoute: LayoutMoviesMovieIdEditRoute,

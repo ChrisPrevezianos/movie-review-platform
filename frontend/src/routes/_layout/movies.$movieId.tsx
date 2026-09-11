@@ -97,12 +97,14 @@ function MovieDetails() {
 
             <div className="flex flex-wrap gap-2">
               {movie.genres.map((genre) => (
-                <span
+                <Link
                   key={genre.id}
-                  className="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground"
+                  to="/genres/$genreId"
+                  params={{ genreId: genre.id }}
+                  className="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground transition-colors hover:text-primary"
                 >
                   {genre.name}
-                </span>
+                </Link>
               ))}
             </div>
           </div>
@@ -113,10 +115,19 @@ function MovieDetails() {
             <p className="text-muted-foreground">
               {movie.directors
                 .map(
-                  (director) =>
-                    `${director.first_name} ${director.last_name}`,
-                )
-                .join(", ")}
+                  (director, index) => (
+                    <span>
+                      {index > 0 && ", "}
+                      <Link
+                        key={director.id}
+                        to="/directors/$directorId"
+                        params={{ directorId: director.id }}
+                        className="text-muted-foreground transition-colors hover:text-primary"
+                      >
+                        {director.first_name} {director.last_name}
+                      </Link>
+                    </span>
+                ))}
             </p>
           </div>
 
@@ -125,12 +136,14 @@ function MovieDetails() {
 
             <div className="flex flex-wrap gap-2">
               {movie.actors.map((actor) => (
-                <span
+                <Link
                   key={actor.id}
-                  className="rounded-md border px-3 py-1 text-sm"
+                  to="/actors/$actorId"
+                  params={{ actorId: actor.id }}
+                  className="rounded-md border border-border px-3 py-1.5 text-sm transition-colors hover:border-primary hover:text-primary"
                 >
                   {actor.first_name} {actor.last_name}
-                </span>
+                </Link>
               ))}
             </div>
           </div>
