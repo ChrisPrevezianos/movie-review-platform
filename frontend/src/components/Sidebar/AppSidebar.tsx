@@ -1,7 +1,7 @@
 /**
  * Main application sidebar for authenticated users.
  */
-import { Home, Plus } from "lucide-react"
+import { Home, Plus, Users } from "lucide-react"
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import { Logo } from "@/components/Common/Logo"
 import {
@@ -29,7 +29,8 @@ export function AppSidebar() {
   const items = isAdmin
     ? [
         ...baseItems,
-        { icon: Plus, title: "Create Movie", path: "/movies/create" }
+        { icon: Plus, title: "Create Movie", path: "/movies/create" },
+        { icon: Users, title: "Manage Users", path: "/users"}
       ]
     : baseItems
 
