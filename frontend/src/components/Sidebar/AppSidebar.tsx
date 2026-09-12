@@ -1,7 +1,7 @@
 /**
  * Main application sidebar for authenticated users.
  */
-import { Home, Plus, Users } from "lucide-react"
+import { Home, Plus, Star, Users } from "lucide-react"
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import { Logo } from "@/components/Common/Logo"
 import {
@@ -17,6 +17,7 @@ import { useAdmin } from "@/hooks/useAdmin"
 
 const baseItems: Item[] = [
   { icon: Home, title: "Dashboard", path: "/" },
+  { icon: Star, title: "Ratings", path: "/ratings" },
 ]
 
 /**
