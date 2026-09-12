@@ -421,13 +421,26 @@ export function UpdateMovieForm({ movie }: { movie: MoviePublic }) {
                 </p>
             )}
 
-            <button
-                type="submit"
-                disabled={mutation.isPending}
-                className="w-fit rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-                {mutation.isPending ? "Updating..." : "Update movie"}
-            </button>
+            <div className="flex items-center gap-3">
+
+                <button
+                    type="submit"
+                    disabled={mutation.isPending}
+                    className="w-fit rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    {mutation.isPending ? "Updating..." : "Update movie"}
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => window.history.back()}
+                    disabled={mutation.isPending}
+                    className="w-fit rounded-md px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    Cancel
+                </button>
+            </div>
+
             {mutation.isError && (
                 <p className="text-sm text-destructive">
                     {errorMessage ?? "Unable to update movie. Please try again."}
