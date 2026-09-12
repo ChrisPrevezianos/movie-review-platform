@@ -9,6 +9,7 @@ import { CreateReviewForm } from "@/components/Reviews/CreateReviewForm"
 import { useState } from "react"
 import { useAdmin } from "@/hooks/useAdmin"
 import { DeleteMovieButton } from "@/components/Movies/DeleteMovieButton"
+import { MovieRating } from "@/components/Movies/MovieRating"
 
 export const Route = createFileRoute("/_layout/movies/$movieId")({
     component: MovieDetails,
@@ -76,7 +77,11 @@ function MovieDetails() {
               {movie.title}
             </h1>
 
-            <div className="mt-2 flex flex-wrap gap-3 text-sm text-muted-foreground">
+            <div className="mt-2">
+              <MovieRating movieId={movie.id} />
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-3 text-sm text-muted-foreground">
               <span>{movie.release_year}</span>
               <span>•</span>
               <span>{movie.duration} min</span>
