@@ -13,6 +13,7 @@ import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
+import { Route as LayoutRatingsRouteImport } from './routes/_layout/ratings'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutUsersRouteImport } from './routes/_layout/users'
 import { Route as LayoutActorsActorIdRouteImport } from './routes/_layout/actors.$actorId'
@@ -39,6 +40,11 @@ const SignupRoute = SignupRouteImport.update({
 const LayoutIndexRoute = LayoutIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutRatingsRoute = LayoutRatingsRouteImport.update({
+  id: '/ratings',
+  path: '/ratings',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/ratings': typeof LayoutRatingsRoute
   '/settings': typeof LayoutSettingsRoute
   '/users': typeof LayoutUsersRoute
   '/actors/$actorId': typeof LayoutActorsActorIdRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/ratings': typeof LayoutRatingsRoute
   '/settings': typeof LayoutSettingsRoute
   '/users': typeof LayoutUsersRoute
   '/': typeof LayoutIndexRoute
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/_layout': typeof LayoutRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/_layout/ratings': typeof LayoutRatingsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/users': typeof LayoutUsersRoute
   '/_layout/': typeof LayoutIndexRoute
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
+    | '/ratings'
     | '/settings'
     | '/users'
     | '/actors/$actorId'
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/signup'
+    | '/ratings'
     | '/settings'
     | '/users'
     | '/'
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/_layout'
     | '/login'
     | '/signup'
+    | '/_layout/ratings'
     | '/_layout/settings'
     | '/_layout/users'
     | '/_layout/'
@@ -201,6 +213,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof LayoutIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/ratings': {
+      id: '/_layout/ratings'
+      path: '/ratings'
+      fullPath: '/ratings'
+      preLoaderRoute: typeof LayoutRatingsRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/settings': {
@@ -263,6 +282,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface LayoutRouteChildren {
+  LayoutRatingsRoute: typeof LayoutRatingsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutUsersRoute: typeof LayoutUsersRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
@@ -275,6 +295,7 @@ interface LayoutRouteChildren {
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
+  LayoutRatingsRoute: LayoutRatingsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutUsersRoute: LayoutUsersRoute,
   LayoutIndexRoute: LayoutIndexRoute,
