@@ -5,18 +5,29 @@ import type { MoviePublic } from "@/client"
 import { Link } from "@tanstack/react-router"
 
 /**
- * Display a movie poster, title, release year, age rating, and genres.
+ * Display a movie poster, title, metadata, genres and optional average rating.
  */
-export function MovieCard( { movie } : { movie: MoviePublic}) {
+export function MovieCard( { movie, averageRating } : { movie: MoviePublic, averageRating?: number}) {
     return (
         <div className="overflow-hidden rounded-lg border bg-card">
             <img src={movie.poster_url} alt={movie.title} className="aspect-[2/3] w-full object-cover" />
             <div className="flex flex-col gap-3 p-4">
                 <h2 className="text-lg font-semibold">{movie.title}</h2>
+
+                {averageRating !== undefined && (
+                    <div className="flex items-center gap-1.5 text-sm">
+                        <span className="text-yellow-400">★</span>
+                        <span className="font-semibold">
+                            {averageRating.toFixed(1)}
+                        </span>
+                    </div>
+                )}
+
                 <div className="flex justify-between text-sm text-muted-foreground">
                     <span>{movie.release_year}</span>
                     <span>{movie.age_rating}</span>
                 </div>
+
                 <div className="flex flex-wrap gap-2">
                     {movie.genres.map((genre) => (
                     <span
@@ -27,6 +38,7 @@ export function MovieCard( { movie } : { movie: MoviePublic}) {
                     </span>
                     ))}
                 </div>
+
                 <Link
                     to="/movies/$movieId"
                     params={{ movieId: movie.id }}
