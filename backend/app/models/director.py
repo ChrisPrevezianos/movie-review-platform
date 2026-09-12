@@ -1,3 +1,4 @@
+"""Director domain model and movie relationship definitions."""
 import datetime
 import uuid
 from typing import TYPE_CHECKING

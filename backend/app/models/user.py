@@ -1,3 +1,4 @@
+"""User domain model for authentication, authorization, and reviews."""
 import datetime
 import uuid
 from sqlalchemy import DateTime

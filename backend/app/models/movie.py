@@ -1,3 +1,4 @@
+"""Movie domain model and its related entity relationships."""
 import datetime 
 import uuid
 from sqlalchemy import DateTime

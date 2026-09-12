@@ -1,3 +1,4 @@
+"""Genre domain model and movie relationship definitions."""
 import uuid
 from typing import TYPE_CHECKING
 from sqlmodel import Field, SQLModel, Relationship

@@ -1,6 +1,6 @@
+"""Link models for many-to-many domain relationships."""
 import uuid
 from sqlmodel import Field, SQLModel
-
 
 class MovieActor(SQLModel, table=True):
     """Association table for the many-to-many relationship between movies and actors."""

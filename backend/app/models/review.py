@@ -1,3 +1,4 @@
+"""Review domain model and user-movie review relationship."""
 import datetime
 import uuid
 from typing import TYPE_CHECKING
