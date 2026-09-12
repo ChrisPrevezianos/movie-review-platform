@@ -1,3 +1,4 @@
+"""Service functions for Genre business rules and repository operations."""
 import uuid
 from fastapi import HTTPException, status
 from sqlmodel import Session
@@ -22,9 +23,11 @@ def create_genre(*, session: Session, genre_create: GenreCreate) -> Genre:
     return genre_repo.create_genre(session=session, genre_create=genre_create)
 
 def get_genre_by_id(*, session: Session, genre_id: uuid.UUID) -> Genre | None:
+    """Return a genre by ID, if it exists."""
     return genre_repo.get_genre_by_id(session=session, genre_id=genre_id)
 
 def get_genres(*, session: Session) -> list[Genre]:
+    """Return all genres."""
     return genre_repo.get_genres(session=session)
 
 def update_genre(*, session: Session, db_genre: Genre, genre_update:GenreUpdate) -> Genre:

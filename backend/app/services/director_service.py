@@ -29,6 +29,7 @@ def create_director(*, session: Session, director_create: DirectorCreate) -> Dir
     return director_repo.create_director(session=session, director_create=director_create)
 
 def get_director_by_id(*, session: Session, director_id: uuid.UUID) -> Director | None:
+    """Return a director by ID, if it exists."""
     return director_repo.get_director_by_id(session=session, director_id=director_id)
 
 def get_directors(*, session: Session, skip: int = 0, limit: int = 10) -> list[Director]:

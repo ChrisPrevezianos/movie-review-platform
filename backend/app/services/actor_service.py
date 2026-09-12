@@ -29,6 +29,7 @@ def create_actor(*, session: Session, actor_create: ActorCreate) -> Actor:
     return actor_repo.create_actor(session=session, actor_create=actor_create)
 
 def get_actor_by_id(*, session: Session, actor_id: uuid.UUID) -> Actor | None:
+    """Return an actor by ID, if it exists."""
     return actor_repo.get_actor_by_id(session=session, actor_id=actor_id)
 
 def get_actors(*, session: Session, skip: int = 0, limit: int = 10) -> list[Actor]:
