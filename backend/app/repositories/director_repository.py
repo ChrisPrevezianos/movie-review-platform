@@ -5,6 +5,7 @@ from app.models.director import Director
 from app.schemas.director import DirectorCreate, DirectorUpdate
 
 def create_director(*, session: Session, director_create: DirectorCreate) -> Director:
+    """Create and persist a director."""
     db_director = Director.model_validate(director_create)
     session.add(db_director)
     session.commit()
@@ -12,6 +13,7 @@ def create_director(*, session: Session, director_create: DirectorCreate) -> Dir
     return db_director
 
 def get_director_by_id(*, session: Session, director_id: uuid.UUID) -> Director | None:
+    """Return a director by ID, if it exists."""
     session_director = session.get(Director, director_id)
     return session_director
 
@@ -22,6 +24,7 @@ def get_directors(*, session: Session, skip: int = 0, limit: int = 10) -> list[D
     return list(session_directors)
 
 def update_director(*, session: Session, db_director: Director, director_update: DirectorUpdate) -> Director:
+    """Update and persist an existing director."""
     director_data = director_update.model_dump(exclude_unset=True)
     db_director.sqlmodel_update(director_data)
     session.add(db_director)
@@ -30,6 +33,7 @@ def update_director(*, session: Session, db_director: Director, director_update:
     return db_director
 
 def delete_director(*, session: Session, db_director: Director) -> None:
+    """Delete a director from the database."""
     session.delete(db_director)
     session.commit()
 

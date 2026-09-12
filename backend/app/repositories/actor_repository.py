@@ -5,6 +5,7 @@ from app.models.actor import Actor
 from app.schemas.actor import ActorCreate, ActorUpdate
 
 def create_actor(*, session: Session, actor_create: ActorCreate) -> Actor:
+    """Create and persist an actor."""
     db_actor = Actor.model_validate(actor_create)
     session.add(db_actor)
     session.commit()
@@ -12,6 +13,7 @@ def create_actor(*, session: Session, actor_create: ActorCreate) -> Actor:
     return db_actor
 
 def get_actor_by_id(*, session: Session, actor_id: uuid.UUID) -> Actor | None:
+    """Return an actor by ID, if it exists."""
     session_actor = session.get(Actor, actor_id)
     return session_actor
 
@@ -22,6 +24,7 @@ def get_actors(*, session: Session, skip: int = 0, limit: int = 10) -> list[Acto
     return list(session_actors)
 
 def update_actor(*, session: Session, db_actor: Actor, actor_update: ActorUpdate) -> Actor:
+    """Update and persist an existing actor."""
     actor_data = actor_update.model_dump(exclude_unset=True)
     db_actor.sqlmodel_update(actor_data)
     session.add(db_actor)
@@ -30,6 +33,7 @@ def update_actor(*, session: Session, db_actor: Actor, actor_update: ActorUpdate
     return db_actor
 
 def delete_actor(*, session: Session, db_actor: Actor) -> None:
+    """Delete an actor from the database."""
     session.delete(db_actor)
     session.commit()
 

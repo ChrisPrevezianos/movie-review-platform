@@ -8,6 +8,7 @@ from app.schemas.review import ReviewCreate, ReviewUpdate
 from sqlalchemy import func
 
 def create_review(*, session: Session, review_create: ReviewCreate, user_id: uuid.UUID, movie_id: uuid.UUID) -> Review:
+    """Create and persist a review."""
     db_review = Review.model_validate(review_create, update={"user_id": user_id, "movie_id": movie_id})
     session.add(db_review)
     session.commit()
@@ -27,6 +28,7 @@ def get_reviews(*, session: Session, skip: int = 0, limit: int = 10) -> list[Rev
     return list(session_reviews)
 
 def update_review(*, session: Session, db_review: Review, review_update: ReviewUpdate) -> Review:
+    """Update and persist an existing review."""
     review_data = review_update.model_dump(exclude_unset=True)
     db_review.sqlmodel_update(review_data)
     db_review.updated_at = datetime.datetime.now(datetime.timezone.utc)
@@ -36,6 +38,7 @@ def update_review(*, session: Session, db_review: Review, review_update: ReviewU
     return db_review
 
 def delete_review(*, session: Session, db_review: Review) -> None:
+    """Delete a review from the database."""
     session.delete(db_review)
     session.commit()
 
