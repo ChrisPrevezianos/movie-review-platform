@@ -37,7 +37,7 @@ function Dashboard() {
     queryKey: ["genres"],
     queryFn: async () => {
       const response = await GenresService.getGenres()
-      return response.data
+      return response.data.genres
     },
     enabled: searchType === "genre"
   })
@@ -100,7 +100,7 @@ function Dashboard() {
               {genresLoading ? (
                 <option disabled>Loading genres...</option>
               ) : (
-                genresData?.genres.map((genre) => (
+                genresData?.map((genre) => (
                   <option key={genre.id} value={genre.name}>{genre.name}</option>
                 ))
               )}
