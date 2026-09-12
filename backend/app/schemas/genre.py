@@ -1,6 +1,6 @@
+"""Schemas for Genre creation, updates, and public API responses."""
 import uuid
 from sqlmodel import Field, SQLModel
-
 
 class GenreCreate(SQLModel):
     name: str = Field(max_length=50)

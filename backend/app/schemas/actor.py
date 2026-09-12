@@ -1,3 +1,4 @@
+"""Schemas for Actor creation, updates, and public API responses."""
 import datetime
 import uuid
 from sqlmodel import Field, SQLModel
